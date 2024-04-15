@@ -1,14 +1,5 @@
-#include <numeric>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <cuda_runtime.h>
-#include <curand_kernel.h>
 #include <sys/time.h>
-
-#define type_of_data float
-
-using namespace std;
+#include "parameter.h"
 
 inline double Seconds() {
 	struct timeval tp;
@@ -24,8 +15,7 @@ void Getting_Input(char *InputPath_train, char *InputPath_test, int order,
 
 void Parameter_Initialization(int order, int core_kernel, int core_length,
 		int core_dimen, int *dimen, double data_norm,
-		type_of_data ***parameter_a,
-		type_of_data ***parameter_b);
+		type_of_data ***parameter_a, type_of_data ***parameter_b);
 
 void Cuda_Parameter_Initialization(int order, int core_kernel, int core_length,
 		int core_dimen, int *dimen_host, int nnz_train,
@@ -49,6 +39,6 @@ void Cuda_Parameter_Initialization(int order, int core_kernel, int core_length,
 		type_of_data ***intermediate_variables_host_to_device);
 
 void Select_Best_Result(type_of_data *train_rmse, type_of_data *train_mae,
-type_of_data *test_rmse, type_of_data *test_mae,
-type_of_data *best_train_rmse, type_of_data *best_train_mae,
-type_of_data *best_test_rmse, type_of_data *best_test_mae);
+		type_of_data *test_rmse, type_of_data *test_mae,
+		type_of_data *best_train_rmse, type_of_data *best_train_mae,
+		type_of_data *best_test_rmse, type_of_data *best_test_mae);

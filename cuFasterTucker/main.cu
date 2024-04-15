@@ -1,12 +1,6 @@
 #include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
 #include "tools.h"
 #include "kernel.h"
-
-#define type_of_data float
 
 using namespace std;
 
@@ -116,6 +110,11 @@ int main(int argc, char *argv[]) {
 
 	}
 
+	printf("learn_alpha_a:%f\tlearn_beta_a:%f\tlambda_a:%f\n", learn_alpha_a,
+			learn_beta_a, lambda_a);
+	printf("learn_alpha_b:%f\tlearn_beta_b:%f\tlambda_b:%f\n", learn_alpha_b,
+			learn_beta_b, lambda_b);
+
 	Getting_Input(InputPath_train, InputPath_test, order, &dimen, &nnz_train,
 			&ptr_train_len_host, &ptr_train_host, &idx_train_len_host,
 			&idx_train_host, &value_train_host, &nnz_test, &index_test_host,
@@ -146,14 +145,16 @@ int main(int argc, char *argv[]) {
 			&intermediate_variables_device,
 			&intermediate_variables_host_to_device);
 
+	if (order == 3) {
+		GET_RMSE_AND_MAE_CSF_Order_3(order, core_kernel, core_dimen, nnz_train,
+				ptr_train_len_device, idx_train_len_device, ptr_train_device,
+				idx_train_device, value_train_device, parameter_a_device,
+				parameter_b_device, &best_train_rmse, &best_train_mae);
+	}
+
 	GET_RMSE_AND_MAE_COO(order, core_kernel, core_dimen, parameter_a_device,
 			parameter_b_device, nnz_test, value_test_device, index_test_device,
 			&best_test_rmse, &best_test_mae);
-
-	GET_RMSE_AND_MAE_CSF(order, core_kernel, core_dimen, nnz_train,
-			ptr_train_len_device, idx_train_len_device, ptr_train_device,
-			idx_train_device, value_train_device, parameter_a_device,
-			parameter_b_device, &best_train_rmse, &best_train_mae);
 
 	printf(
 			"initial:\ttrain rmse:%f\ttest rmse:%f\ttrain mae:%f\ttest mae:%f\t\n",
@@ -188,10 +189,13 @@ int main(int argc, char *argv[]) {
 		stop_time = Seconds();
 		time_spend += stop_time - start_time;
 
-		GET_RMSE_AND_MAE_CSF(order, core_kernel, core_dimen, nnz_train,
-				ptr_train_len_device, idx_train_len_device, ptr_train_device,
-				idx_train_device, value_train_device, parameter_a_device,
-				parameter_b_device, &train_rmse, &train_mae);
+		if (order == 3) {
+			GET_RMSE_AND_MAE_CSF_Order_3(order, core_kernel, core_dimen,
+					nnz_train, ptr_train_len_device, idx_train_len_device,
+					ptr_train_device, idx_train_device, value_train_device,
+					parameter_a_device, parameter_b_device, &train_rmse,
+					&train_mae);
+		}
 
 		GET_RMSE_AND_MAE_COO(order, core_kernel, core_dimen, parameter_a_device,
 				parameter_b_device, nnz_test, value_test_device,
@@ -200,11 +204,13 @@ int main(int argc, char *argv[]) {
 		Select_Best_Result(&train_rmse, &train_mae, &test_rmse, &test_mae,
 				&best_train_rmse, &best_train_mae, &best_test_rmse,
 				&best_test_mae);
+
 		printf("%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", iter, train_rmse,
 				test_rmse, train_mae, test_mae, mid_time - start_time,
 				stop_time - mid_time, stop_time - start_time, time_spend);
 
 	}
+
 	printf("best:\ttrain rmse:%f\ttest rmse:%f\ttrain mae:%f\ttest mae:%f\t\n",
 			best_train_rmse, best_test_rmse, best_train_mae, best_test_mae);
 

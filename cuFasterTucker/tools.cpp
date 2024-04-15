@@ -1,12 +1,8 @@
-#include "tools.h"
-#include <numeric>
-#include <iomanip>
 #include <fstream>
+#include <cuda_runtime.h>
 #include <string.h>
 #include <math.h>
-#include <stdlib.h>
-
-#define type_of_data float
+#include "parameter.h"
 
 using namespace std;
 
@@ -166,11 +162,13 @@ void Getting_Input(char *InputPath_train, char *InputPath_test, int order,
 
 void Parameter_Initialization(int order, int core_kernel, int core_length,
 		int core_dimen, int *dimen, double data_norm,
-		type_of_data ***parameter_a,
-		type_of_data ***parameter_b) {
+		type_of_data ***parameter_a, type_of_data ***parameter_b) {
+
+	srand((unsigned) time(NULL));
 
 	*parameter_a = (type_of_data**) malloc(sizeof(type_of_data*) * order);
 	*parameter_b = (type_of_data**) malloc(sizeof(type_of_data*) * order);
+
 	for (int i = 0; i < order; i++) {
 		(*parameter_a)[i] = (type_of_data*) malloc(
 				sizeof(type_of_data) * dimen[i] * core_dimen);
@@ -179,16 +177,18 @@ void Parameter_Initialization(int order, int core_kernel, int core_length,
 	}
 
 	for (int i = 0; i < order; i++) {
+
 		for (int j = 0; j < dimen[i] * core_dimen; j++) {
 			(*parameter_a)[i][j] = pow(data_norm / core_length, 1.0 / order)
 					* frand(0.5, 1.5);
 		}
+
 		for (int j = 0; j < core_kernel * core_dimen; j++) {
 			(*parameter_b)[i][j] = pow(1.0 / core_kernel, 1.0 / order)
 					* frand(0.5, 1.5);
 		}
-	}
 
+	}
 }
 
 void Cuda_Parameter_Initialization(int order, int core_kernel, int core_length,
@@ -368,9 +368,9 @@ void Cuda_Parameter_Initialization(int order, int core_kernel, int core_length,
 }
 
 void Select_Best_Result(type_of_data *train_rmse, type_of_data *train_mae,
-type_of_data *test_rmse, type_of_data *test_mae,
-type_of_data *best_train_rmse, type_of_data *best_train_mae,
-type_of_data *best_test_rmse, type_of_data *best_test_mae) {
+		type_of_data *test_rmse, type_of_data *test_mae,
+		type_of_data *best_train_rmse, type_of_data *best_train_mae,
+		type_of_data *best_test_rmse, type_of_data *best_test_mae) {
 
 	if (*train_rmse < *best_train_rmse) {
 		*best_train_rmse = *train_rmse;
